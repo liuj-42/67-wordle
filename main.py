@@ -1,6 +1,5 @@
 from typing import Final
 import requests
-import json
 
 
 def glorp():
@@ -92,13 +91,13 @@ def get_first_row(sol: str):
             * is the non letter (gray)
             ans _ is yellow
     """
-    word = f"{sol[0:3]}__"
-    avoid = sol[3:5]
-    candidates = PROCESSED_WORDS[word]
+    pattern = f"{sol[0:3]}__"
+    grey = sol[3:5]
+    candidates = PROCESSED_WORDS[pattern]
 
     # now match words without two letters
     for c in candidates:
-        if c[3:5] == avoid or c[3] == avoid[0] or c[4] == avoid[1]:
+        if is_grey(sol, grey, c[3:5]) is False:
             continue
         # anything past this point should work as a word
         return c
@@ -127,9 +126,9 @@ def get_second_row(sol: str):
         yellow_ = candidate[3:5]
 
         if (
-            yellow_[0] not in sol
+            yellow_[0] not in sol[1:]
             or yellow_[0] == yellow[0]
-            or yellow_[1] not in sol
+            or yellow_[1] not in sol[1:]
             or yellow_[1] == yellow[1]
         ):
             continue
@@ -162,7 +161,7 @@ def get_third_row(sol: str):
         # next check yellow
         # letter must be in ans, but must not be the current letter
         yellow_ = candidate[4]
-        if yellow_ not in sol or yellow_ == yellow:
+        if yellow_ not in sol[3:] or yellow_ == yellow:
             continue
         return candidate
     print("no candidates")
@@ -191,7 +190,7 @@ def get_fourth_row(sol: str):
         # next check yellow
         # letter must be in ans, but must not be the current letter
         yellow_ = candidate[4]
-        if yellow_ not in sol or yellow_ == yellow:
+        if yellow_ not in sol[2:] or yellow_ == yellow:
             continue
         return candidate
     return "_____"
@@ -299,8 +298,8 @@ def wordle_row(answer, guess):
 
 PROCESSED_WORDS: Final[dict[str, list[str]]] = process_word_list()
 
-ans = get_todays_answer()
-ans = "batch"
+# ans = get_todays_answer()
+ans = input("Enter today's wordle answer: ").strip().lower()
 
 def is_grey(sol, check, guess) -> bool:
     """
@@ -342,8 +341,8 @@ words = [
     get_sixth_row(ans),
 ]
 
-# for word in words:
-#     wordle_row(ans, word)
+for word in words:
+    wordle_row(ans, word)
 
 print("found a combination:")
 [print(word) for word in words]
