@@ -1,14 +1,7 @@
-"""
-TODO:
-1. cant have multiple letters for yellow unless the word has those letters
-    e.g. batch has 1 t, cant use "blatt" for 2nd row - would just be X*__* not X*___
-2. find some api to get the daily wordle answer instead of user input/cli arg
-3. process word once into a file and load that file instead of processing every time
-4. the word list that is being used is probably not correct anymore
-5. add an arg for leniency (probably a bunch of work tbh)
-
-too lazy to implement now
-"""
+# /// script
+# requires-python = ">=3.13"
+# dependencies = []
+# ///
 
 from typing import Final
 import argparse
