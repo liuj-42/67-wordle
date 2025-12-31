@@ -1,5 +1,17 @@
+"""
+TODO:
+1. cant have multiple letters for yellow unless the word has those letters
+    e.g. batch has 1 t, cant use "blatt" for 2nd row - would just be X*__* not X*___
+2. find some api to get the daily wordle answer instead of user input/cli arg
+3. process word once into a file and load that file instead of processing every time
+4. the word list that is being used is probably not correct anymore
+5. add an arg for leniency (probably a bunch of work tbh)
+
+too lazy to implement now
+"""
+
 from typing import Final
-import requests
+import argparse
 
 """
 ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
@@ -33,6 +45,35 @@ import requests
 ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░▒▒▒▒▓▓███████░░░░░░
 """
 
+
+"""
+some notes
+grid is as follows:
+
+xxxxx   GGGxx
+xxxxx   GxxYY
+xxxxx   GGGxY
+xxxxx   GxGxY
+xxxxx   GGGxY
+xxxxx   xxxxY
+
+G is green, Y is yellow
+
+given todays answer, find a combination of submissions to get the 67 pattern (if possible)
+
+e.g.
+today's word is SPEED
+
+SPE**
+S**__
+SPE*_
+S*E*_
+SPE*_
+****_
+
+where * is not in "speed", _ is a letter from speed that is not the current position
+
+"""
 
 
 def process_word_list(fname="combined_wordlist.txt") -> dict[str, list[str]]:
@@ -73,16 +114,6 @@ def process_word_list(fname="combined_wordlist.txt") -> dict[str, list[str]]:
     return res
 
 
-def get_todays_answer() -> str:
-    try:
-        ans = requests.get(
-            "https://wordlehints.co.uk/wp-json/wordlehint/v1/answers/latest"
-        )
-        return ans.json()["answer"].lower()
-    except Exception:
-        return ""
-
-
 def get_first_row(sol: str):
     """
     match the pattern of XXX**
@@ -100,6 +131,8 @@ def get_first_row(sol: str):
             continue
         # anything past this point should work as a word
         return c
+    if LOG_LEVEL <= LOG["debug"]:
+        print("no candidates")
     return "_____"
 
 
@@ -132,6 +165,8 @@ def get_second_row(sol: str):
         ):
             continue
         return candidate
+    if LOG_LEVEL <= LOG["debug"]:
+        print("no candidates")
 
     # if this doesnt work then fall back to a more lenient one (G__YY) ?
     return "_____"
@@ -151,7 +186,7 @@ def get_third_row(sol: str):
     candidates = PROCESSED_WORDS[pattern]
     for candidate in candidates:
         # check grey first
-        # if candidate != "batta": 
+        # if candidate != "batta":
         #     continue
         grey_ = candidate[3]
         # print(grey, grey_)
@@ -163,7 +198,8 @@ def get_third_row(sol: str):
         if yellow_ not in sol[3:] or yellow_ == yellow:
             continue
         return candidate
-    print("no candidates")
+    if LOG_LEVEL <= LOG["debug"]:
+        print("no candidates")
     return "_____"
 
 
@@ -189,9 +225,11 @@ def get_fourth_row(sol: str):
         # next check yellow
         # letter must be in ans, but must not be the current letter
         yellow_ = candidate[4]
-        if yellow_ not in sol[2:] or yellow_ == yellow:
+        if yellow_ not in sol[:] or yellow_ == yellow:
             continue
         return candidate
+    if LOG_LEVEL <= LOG["debug"]:
+        print("no candidates")
     return "_____"
 
 
@@ -221,6 +259,8 @@ def get_fifth_row(sol: str):
         if yellow_ not in sol or yellow_ == yellow:
             continue
         return candidate
+    if LOG_LEVEL <= LOG["debug"]:
+        print("no candidates")
     return "_____"
 
 
@@ -248,34 +288,9 @@ def get_sixth_row(sol: str):
         if yellow_ not in sol or yellow_ == yellow:
             continue
         return candidate
+    if LOG_LEVEL <= LOG["debug"]:
+        print("no candidates")
     return "_____"
-"""
-grid is as follows:
-
-xxxxx   GGGxx
-xxxxx   GxxYY
-xxxxx   GGGxY
-xxxxx   GxGxY
-xxxxx   GGGxY
-xxxxx   xxxxY
-
-G is green, Y is yellow
-
-given todays answer, find a combination of submissions to get the 67 pattern (if possible)
-
-e.g.
-today's word is SPEED
-
-SPE**
-S**__
-SPE*_
-S*E*_
-SPE*_
-****_
-
-where * is not in "speed", _ is a letter from speed that is not the current position
-
-"""
 
 
 def wordle_row(answer, guess):
@@ -295,11 +310,6 @@ def wordle_row(answer, guess):
     print(out)
 
 
-PROCESSED_WORDS: Final[dict[str, list[str]]] = process_word_list()
-
-# ans = get_todays_answer()
-ans = input("Enter today's wordle answer: ").strip().lower()
-
 def is_grey(sol, check, guess) -> bool:
     """
     sol: entire word (check for yellow)
@@ -307,53 +317,69 @@ def is_grey(sol, check, guess) -> bool:
     guess: guess to check
     """
     # iterate over each of of the guess
-    # print(check, guess)
+    if LOG_LEVEL <= LOG["debug"]:
+        print(f"is_grey: sol={sol}, check={check}, guess={guess}")
     if check == guess:
         return False
     for c, g in zip(check, guess):
         if c == g:
-            # print("c == g")
             return False
         if g in sol:
-            # print(f"g({g}) in sol({sol})")
             return False
     return True
 
-def is_yellow(sol, check , guess) -> bool:
+
+def is_yellow(sol, check, guess) -> bool:
     """
     sol: entire word (check for yellow)
     check: letters to check against
     guess: guess to check
     """
-    for (c, g) in zip(check, guess):
+    for c, g in zip(check, guess):
         if g not in sol or c == g:
             return False
     return True
 
 
-words = [
-    get_first_row(ans),
-    get_second_row(ans),
-    get_third_row(ans),
-    get_fourth_row(ans),
-    get_fifth_row(ans),
-    get_sixth_row(ans),
-]
-
-for word in words:
-    wordle_row(ans, word)
-
-print("found a combination:")
-[print(word) for word in words]
+PROCESSED_WORDS: Final[dict[str, list[str]]] = process_word_list()
+LOG = {"error": 4, "info": 2, "debug": 1}
 
 
 
+def main(ans: str):
+
+    words = [
+        get_first_row(ans),
+        get_second_row(ans),
+        get_third_row(ans),
+        get_fourth_row(ans),
+        get_fifth_row(ans),
+        get_sixth_row(ans),
+    ]
+
+    if LOG_LEVEL <= LOG["debug"]:
+        for word in words:
+            wordle_row(ans, word)
+
+    print("found a combination:")
+    [print(word) for word in words]
 
 
-"""
-TODO:
-cant have multiple letters for yellow unless the word has those letters 
-    e.g. batch has 1 t, cant use "blatt" for 2nd row - would just be X*__* not X*___
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="wordle 67 solver")
+    parser.add_argument("answer", type=str, help="wordle answer")
+    parser.add_argument(
+        "-d",
+        "--debug",
+        choices=["error", "debug", "info"],
+        help="set log level",
+        default="error",
+        required=False,
+    )
+    args = parser.parse_args()
+    global LOG_LEVEL
+    LOG_LEVEL = LOG[args.debug]
 
-too lazy to implement now
-"""
+    if LOG_LEVEL <= LOG["debug"]:
+        print(args)
+    main(args.answer)
