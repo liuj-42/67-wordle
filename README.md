@@ -26,3 +26,8 @@ todo:
 5. add an arg for leniency (probably a bunch of work tbh)
 
 too lazy to implement now
+<div style="display:flex">
+<img width="128" height="128" alt="glorp" src="https://github.com/user-attachments/assets/113e38ae-8c8c-4ffa-85ff-2cd7399c1c79" />
+<img width="128" height="128" alt="cateat" src="https://github.com/user-attachments/assets/c2ede6bf-0fda-4c49-bbf8-426e65586045" />
+</div>
+
