@@ -24,6 +24,7 @@ todo:
 3. process word once into a file and load that file instead of processing every time
 4. the word list that is being used is probably not correct anymore
 5. add an arg for leniency (probably a bunch of work tbh)
+6. change scope to be for 67 to be for patterns in general + add a way to draw and save patterns -> write to some file that stores patterns
 
 too lazy to implement now
 <div style="display:flex">

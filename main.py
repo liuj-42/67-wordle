@@ -179,10 +179,7 @@ def get_third_row(sol: str):
     candidates = PROCESSED_WORDS[pattern]
     for candidate in candidates:
         # check grey first
-        # if candidate != "batta":
-        #     continue
         grey_ = candidate[3]
-        # print(grey, grey_)
         if not is_grey(sol, grey, grey_):
             continue
         # next check yellow
@@ -218,7 +215,7 @@ def get_fourth_row(sol: str):
         # next check yellow
         # letter must be in ans, but must not be the current letter
         yellow_ = candidate[4]
-        if yellow_ not in sol[:] or yellow_ == yellow:
+        if yellow_ not in sol[1] + sol[4:] or yellow_ == yellow:
             continue
         return candidate
     if LOG_LEVEL <= LOG["debug"]:
@@ -243,13 +240,13 @@ def get_fifth_row(sol: str):
     for candidate in candidates:
         # check grey first
         grey_ = candidate[3]
-        if grey_ == grey:
+        if not is_grey(sol, grey, grey_):
             continue
 
         # next check yellow
         # letter must be in ans, but must not be the current letter
         yellow_ = candidate[4]
-        if yellow_ not in sol or yellow_ == yellow:
+        if yellow_ not in sol[3:] or yellow_ == yellow:
             continue
         return candidate
     if LOG_LEVEL <= LOG["debug"]:
@@ -302,6 +299,16 @@ def wordle_row(answer, guess):
             out += "_"
     print(out)
 
+def get_guesses(pattern: str, sol: str):
+    """
+    get words for the provided pattern
+    
+    pattern: str    the pattern to try to match the guess with 
+        e.g. GXGXY (X: grey, Y: yellow, G: green)
+    sol: str        the solution to the wordle to use 
+    """
+    pass
+
 
 def is_grey(sol, check, guess) -> bool:
     """
@@ -327,6 +334,20 @@ def is_yellow(sol, check, guess) -> bool:
     sol: entire word (check for yellow)
     check: letters to check against
     guess: guess to check
+    """
+    """
+    updated logic:
+        if something is yellow then that letter has to be removed from sol
+         case of sol batch and guess blatt with patterh XXXYY b/c the only t
+         is consumed
+        need to work around that - there are more combinations the more 
+         letters there are:
+         1: 1
+         2: 1 2, 2 1
+         3: 1 2 3, 1 3 2, 2 1 3, 2 3 1, 3 1 2, 3 2 1
+         etc.
+        does this matter? could i just do something easier lol
+        TODO: revisit this function
     """
     for c, g in zip(check, guess):
         if g not in sol or c == g:
